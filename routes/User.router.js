@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const nodemailer = require("nodemailer");
 const User = require("../models/User.model");
-const authenticateUser = require("../middleware/authendicate");
+const authenticateUser = require("../middleware/authenticate");
 const router = express.Router();
 const admin = require("firebase-admin");
 
