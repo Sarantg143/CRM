@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Lead = require("../models/Lead.model");
 const Property = require("../models/Property.model");
-const authenticateUser = require("../middleware/authendicate");
+const authenticateUser = require("../middleware/authenticate");
 const User = require("../models/User.model");
 
 //for role-based access
