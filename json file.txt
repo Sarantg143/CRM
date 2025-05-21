@@ -1,27 +1,24 @@
 1️⃣ Register a New User
 Method: POST
-URL: http://localhost:5000/api/users
+URL: http://localhost:5000/api/auth/signup
 
 {
   "name": "Saran",
   "email": "saran@gmail.com",
   "username": "saran",
   "password": "password123"
+}role:user
+{
+ "name": "Saran",
+  "email": "directBuilder@gmail.com",
+  "username": "directBuilder",
+  "password": "password@123"
 }
 {
-  
-_id: 67c52685e871b776c356acc9
-  "name": "Saran",
-  "email": "buyer@gmail.com",
-  "username": "buyer",
-  "password": "buyer"
-}
-{
-_id:  67c52716e871b776c356accf
-  "name": "Saran",
+ "name": "Saran",
   "email": "admin@gmail.com",
   "username": "admin",
-  "password": "admin"
+  "password": "password@123"
 }
 {
   _id: 67c526f7e871b776c356accc
@@ -34,16 +31,16 @@ _id:  67c52716e871b776c356accf
 
 2️⃣ Login User
 Method: POST
-URL: http://localhost:5000/api/users/login
+URL: http://localhost:5000/api/auth/login
 
 {
-  "emailOrUsername": "saran",
-  "password": "password123"
+  "identifier": "superAdmin",
+  "password": "password@123"
 }
 
 1️⃣ View All Users (Admin Only)
 Method: GET
-URL: http://localhost:5000/api/users/admin/view-users
+URL: http://localhost:5000/api/users/
 Headers:
 
 {

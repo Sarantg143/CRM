@@ -23,8 +23,9 @@ mongoose.connect(process.env.MONGO_URI)
 
 //Imports
 const userRoutes = require("./routes/User.router");
-const propertRoutes = require("./routes/Property.router");
-const uploadRoutes = require("./routes/Upload.router");
+const authRoutes = require("./routes/Auth.router")
+const propertyRoutes = require("./routes/Property.router");
+const propertyGetRoutes = require("./routes/PropertyGet.router");
 const leadRoutes = require("./routes/Lead.router");
 const inquiryRoutes = require("./routes/Inquiry.router");
 const transactionRoutes = require("./routes/Transaction.router");
@@ -35,11 +36,12 @@ app.use(express.json());
 
 // Routes
 app.use("/api/users", userRoutes);
-app.use("/api/properties", propertRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/leads", leadRoutes);
-app.use("/api/inquiries", inquiryRoutes);
-app.use("/api/transactions", transactionRoutes);
+app.use("/api/auth",authRoutes);
+app.use("/api/properties", propertyRoutes);
+app.use("/api/propertiesGet", propertyGetRoutes);
+// app.use("/api/leads", leadRoutes);
+// app.use("/api/inquiries", inquiryRoutes);
+// app.use("/api/transactions", transactionRoutes);
 
 
 app.get("/", (req, res) => {
