@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 const Inquiry = require('../models/Inquiry.model');
+const BuilderProfile = require('../models/Property/BuilderProfile.model');
+const Project = require('../models/Property/Project.model'); 
 const { authenticate, authorizeRoles } = require('../middleware/auth');
 
 // ------------------------
@@ -9,32 +11,40 @@ const { authenticate, authorizeRoles } = require('../middleware/auth');
 // ------------------------
 
 // Create an inquiry (user)
-router.post( '/', authenticate, authorizeRoles('user', 'directBuilder', 'admin', 'superAdmin'),
-  async (req, res) => {
-    try {
-      const { builder, project, message, contactEmail, contactPhone } = req.body;
+router.post('/', authenticate, authorizeRoles('user', 'directBuilder', 'admin', 'superAdmin'), async (req, res) => {
+  try {
+    const { builder, project, message, contactEmail, contactPhone } = req.body;
 
-      if (!builder || !message) {
-        return res.status(400).json({ message: 'Builder and message are required' });
-      }
-
-      const newInquiry = new Inquiry({
-        user: req.user._id,
-        builder,
-        project,
-        message,
-        contactEmail,
-        contactPhone,
-        status: 'new'
-      });
-
-      await newInquiry.save();
-      res.status(201).json(newInquiry);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+    if (!builder || !message) {
+      return res.status(400).json({ message: 'Builder and message are required' });
     }
+    const builderExists = await BuilderProfile.findById(builder);
+    if (!builderExists) {
+      return res.status(404).json({ message: 'Builder not found' });
+    }
+
+    if (project) {
+      const projectExists = await Project.findById(project);
+      if (!projectExists) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+    }
+    const newInquiry = new Inquiry({
+      user: req.user._id,
+      builder,
+      project,
+      message,
+      contactEmail,
+      contactPhone,
+      status: 'new'
+    });
+
+    await newInquiry.save();
+    res.status(201).json(newInquiry);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-);
+});
 
 // Get all inquiries by logged-in user
 router.get('/my', authenticate,authorizeRoles('user'),

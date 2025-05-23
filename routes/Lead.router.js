@@ -1,18 +1,56 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
+
 const Lead = require('../models/Lead.model');
+const BuilderProfile = require('../models/Property/BuilderProfile.model');
+const Project = require('../models/Property/Project.model');
+const Unit = require('../models/Property/Unit.model');
+const User = require('../models/User.model');
+
 const { authenticate, authorizeRoles } = require('../middleware/auth');
 
 // Create a new lead (accessible by anyone authenticated - user, directBuilder, admin)
 router.post('/', authenticate, async (req, res) => {
   try {
     const leadData = req.body;
-    if (req.user.role === 'user') {
-      leadData.createdBy = req.user._id; 
+
+    async function checkExists(id, model) {
+      if (!id) return true; 
+      if (!mongoose.Types.ObjectId.isValid(id)) return false;
+      const exists = await model.exists({ _id: id });
+      return !!exists;
     }
+
+    const builderExists = await checkExists(leadData.interestedIn?.builder, BuilderProfile);
+    if (!builderExists) return res.status(400).json({ error: 'Builder ID is invalid or does not exist' });
+
+    const projectExists = await checkExists(leadData.interestedIn?.project, Project);
+    if (!projectExists) return res.status(400).json({ error: 'Project ID is invalid or does not exist' });
+
+    const unitExists = await checkExists(leadData.interestedIn?.unit, Unit);
+    if (!unitExists) return res.status(400).json({ error: 'Unit ID is invalid or does not exist' });
+
+    const assignedToExists = await checkExists(leadData.assignedTo, User);
+    if (!assignedToExists) return res.status(400).json({ error: 'AssignedTo User ID is invalid or does not exist' });
+
+    if (leadData.notes && leadData.notes.length) {
+      for (const note of leadData.notes) {
+        const addedByExists = await checkExists(note.addedBy, User);
+        if (!addedByExists) {
+          return res.status(400).json({ error: `Note addedBy User ID (${note.addedBy}) is invalid or does not exist` });
+        }
+      }
+    }
+    leadData.createdBy = req.user._id;
+    const createdByExists = await checkExists(leadData.createdBy, User);
+    if (!createdByExists) return res.status(400).json({ error: 'CreatedBy User ID is invalid or does not exist' });
+
     const newLead = new Lead(leadData);
     await newLead.save();
+
     res.status(201).json(newLead);
+
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
