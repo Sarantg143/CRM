@@ -22,28 +22,41 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((err) => console.error("MongoDB connection error:", err));
 
 //Imports
-const userRoutes = require("./routes/User.router");
-const authRoutes = require("./routes/Auth.router")
+
+const appointmentRoutes = require("./routes/Appointment.router");
+const authRoutes = require("./routes/Auth.router");
+const bookingRoutes = require("./routes/Booking.router");
+const complaintRoutes = require("./routes/Complaint.router");
+const feedbackRoutes = require("./routes/Feedback.router");
+const inquiryRoutes = require("./routes/Inquiry.router");
+const leadRoutes = require("./routes/Lead.router");
+const notificationRoutes = require("./routes/Notification.router");
 const propertyRoutes = require("./routes/Property.router");
 const propertyGetRoutes = require("./routes/PropertyGet.router");
-const bookingRoutes = require("./routes/Booking.router");
-const leadRoutes = require("./routes/Lead.router");
-const inquiryRoutes = require("./routes/Inquiry.router");
+const reviewRoutes = require("./routes/Review.router");
+const savedPropertRoutes = require("./routes/SavedProperty.router");
 const transactionRoutes = require("./routes/Transaction.router");
-
+const userRoutes = require("./routes/User.router");
 
 // Middleware
 app.use(express.json());
 
 // Routes
-app.use("/api/users", userRoutes);
+app.use("/api/appointments",appointmentRoutes);
 app.use("/api/auth",authRoutes);
+app.use("/api/booking",bookingRoutes);
+app.use("/api/complaints",complaintRoutes);
+app.use("/api/feedback", feedbackRoutes);
+app.use("/api/inquiries", inquiryRoutes);
+app.use("/api/leads", leadRoutes);
+app.use("/api/notification", notificationRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/propertiesGet", propertyGetRoutes);
-app.use("/api/booking",bookingRoutes);
-app.use("/api/leads", leadRoutes);
-app.use("/api/inquiries", inquiryRoutes);
-// app.use("/api/transactions", transactionRoutes);
+app.use("/api/review", reviewRoutes);
+app.use("/api/saved-property",savedPropertRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/users", userRoutes);
+
 
 
 app.get("/", (req, res) => {
