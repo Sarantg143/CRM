@@ -26,6 +26,7 @@ const userRoutes = require("./routes/User.router");
 const authRoutes = require("./routes/Auth.router")
 const propertyRoutes = require("./routes/Property.router");
 const propertyGetRoutes = require("./routes/PropertyGet.router");
+const bookingRoutes = require("./routes/Booking.router");
 const leadRoutes = require("./routes/Lead.router");
 const inquiryRoutes = require("./routes/Inquiry.router");
 const transactionRoutes = require("./routes/Transaction.router");
@@ -39,8 +40,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth",authRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/propertiesGet", propertyGetRoutes);
-// app.use("/api/leads", leadRoutes);
-// app.use("/api/inquiries", inquiryRoutes);
+app.use("/api/booking",bookingRoutes);
+app.use("/api/leads", leadRoutes);
+app.use("/api/inquiries", inquiryRoutes);
 // app.use("/api/transactions", transactionRoutes);
 
 

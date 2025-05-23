@@ -1,38 +1,53 @@
 const mongoose = require('mongoose');
 
-const LeadSchema = new mongoose.Schema({
-  property: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Property',
-    required: true
+const leadSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
   },
-  buyer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+  email: {
+    type: String,
+    required: true,
+    lowercase: true,
+    trim: true,
   },
-  seller: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+  phone: {
+    type: String,
+    required: true,
+  },
+  interestedIn: {
+    // Could be builder, project, or property unit, optional references
+    builder: { type: mongoose.Schema.Types.ObjectId, ref: 'BuilderProfile' },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
+    unit: { type: mongoose.Schema.Types.ObjectId, ref: 'Unit' },
+  },
+  source: {
+    type: String,
+    enum: ['website', 'referral', 'phone', 'email', 'walk-in', 'advertisement', 'other'],
+    default: 'website',
   },
   status: {
     type: String,
-    enum: ['pending', 'interested', 'negotiating', 'closed', 'rejected'],
-    default: 'pending'
+    enum: ['new', 'contacted', 'interested', 'not interested', 'converted', 'lost'],
+    default: 'new',
   },
-  message: {
-    type: String,
-    maxlength: 1000
+  assignedTo: {
+    // Which directBuilder or admin is handling this lead
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   },
-  offerPrice: {
-    type: Number, // if the buyer is making an offer
-    min: 0
-  },
+  notes: [
+    {
+      note: String,
+      date: { type: Date, default: Date.now },
+      addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    }
+  ],
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model('Lead', LeadSchema);
+module.exports = mongoose.model('Lead', leadSchema);

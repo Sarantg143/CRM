@@ -1,29 +1,15 @@
 const mongoose = require('mongoose');
 
-const InquirySchema = new mongoose.Schema({
-    buyer: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
-    },
-    property: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Property',
-      required: true
-    },
-    message: {
-      type: String,
-      required: [true, 'Please add a message'],
-    },
-    status: {
-      type: String,
-      enum: ['pending', 'resolved'],
-      default: 'pending'
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now
-    }
-  });
-  
-  module.exports = mongoose.model('Inquiry', InquirySchema);
+const inquirySchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  builder: { type: mongoose.Schema.Types.ObjectId, ref: 'BuilderProfile', required: true },
+  project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
+  message: { type: String, required: true },
+  contactEmail: { type: String },
+  contactPhone: { type: String },
+  status: { type: String, enum: ['new', 'in-progress', 'closed'], default: 'new' },
+  createdAt: { type: Date, default: Date.now },
+  respondedAt: { type: Date }
+});
+
+module.exports = mongoose.model('Inquiry', inquirySchema);

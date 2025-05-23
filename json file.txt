@@ -6,7 +6,7 @@ URL: http://localhost:5000/api/auth/signup
   "name": "Saran",
   "email": "saran@gmail.com",
   "username": "saran",
-  "password": "password123"
+  "password": "password@123"
 }role:user
 {
  "name": "Saran",
