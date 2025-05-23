@@ -12,6 +12,19 @@ const Unit = require('../models/Property/Unit.model');
 // --- Builder Profile ---
 router.post('/builder-profile', authenticate, authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
   try {
+    const { user } = req.body;
+    const existingUser = await User.findById(user);
+    if (!existingUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // Check if builder profile already exists
+    const existingProfile = await BuilderProfile.findOne({ user });
+    if (existingProfile) {
+      return res.status(200).json({
+        message: 'Builder profile already exists for this user.',
+        builderProfile: existingProfile
+      });
+    }
     const profile = new BuilderProfile(req.body);
     await profile.save();
     res.status(201).json(profile);
@@ -50,9 +63,23 @@ router.delete('/builder-profile/:id', authenticate, authorizeRoles('admin', 'sup
 // --- Project ---
 router.post('/project', authenticate, authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
   try {
+    const { builder, projectName } = req.body;
+
+    const builderExists = await BuilderProfile.findById(builder);
+    if (!builderExists) {
+      return res.status(404).json({ message: 'Builder not found.' });
+    }
+
+    //Check for duplicate project name under the same builder
+    const existingProject = await Project.findOne({ builder, projectName });
+    if (existingProject) {
+      return res.status(409).json({ message: `Project "${projectName}" already exists for this builder.` });
+    }
+
     const project = new Project(req.body);
     await project.save();
     res.status(201).json(project);
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -88,6 +115,18 @@ router.delete('/project/:id', authenticate, authorizeRoles('admin', 'superAdmin'
 // --- Building ---
 router.post('/building', authenticate, authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
   try {
+    const { project, buildingName } = req.body;
+
+    const projectExists = await Project.findById(project);
+    if (!projectExists) {
+      return res.status(404).json({ message: 'Project not found. Please provide a valid project ID.' });
+    }
+
+    const duplicateBuilding = await Building.findOne({ project, buildingName });
+    if (duplicateBuilding) {
+      return res.status(409).json({ message: `Building "${buildingName}" already exists in this project.` });
+    }
+
     const building = new Building(req.body);
     await building.save();
     res.status(201).json(building);
@@ -126,6 +165,18 @@ router.delete('/building/:id', authenticate, authorizeRoles('admin', 'superAdmin
 // --- Floor ---
 router.post('/floor', authenticate, authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
   try {
+    const { building, floorNumber } = req.body;
+
+    const buildingExists = await Building.findById(building);
+    if (!buildingExists) {
+      return res.status(404).json({ message: 'Building not found. Please provide a valid building ID.' });
+    }
+
+    const existingFloor = await Floor.findOne({ building, floorNumber });
+    if (existingFloor) {
+      return res.status(409).json({ message: `Floor ${floorNumber} already exists in this building.` });
+    }
+
     const floor = new Floor(req.body);
     await floor.save();
     res.status(201).json(floor);
@@ -133,6 +184,7 @@ router.post('/floor', authenticate, authorizeRoles('directBuilder', 'admin', 'su
     res.status(400).json({ error: err.message });
   }
 });
+
 
 router.get('/floors/by-building/:buildingId', async (req, res) => {
   try {
@@ -164,6 +216,18 @@ router.delete('/floor/:id', authenticate, authorizeRoles('admin', 'superAdmin'),
 // --- Unit ---
 router.post('/unit', authenticate, authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
   try {
+    const { floor, unitNumber } = req.body;
+
+    const floorExists = await Floor.findById(floor);
+    if (!floorExists) {
+      return res.status(404).json({ message: 'Floor not found. Please provide a valid floor ID.' });
+    }
+
+    const duplicate = await Unit.findOne({ floor, unitNumber });
+    if (duplicate) {
+      return res.status(409).json({ message: `Unit ${unitNumber} already exists on this floor.` });
+    }
+
     const unit = new Unit(req.body);
     await unit.save();
     res.status(201).json(unit);
