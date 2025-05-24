@@ -13,10 +13,11 @@ const Unit = require('../models/Property/Unit.model');
 router.post('/builder-profile', authenticate, authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
   try {
     const { user } = req.body;
-    const existingUser = await User.findById(user);
-    if (!existingUser) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    
+    // const existingUser = await User.findById(user);
+    // if (!existingUser) {
+    //   return res.status(404).json({ message: 'User not found' });
+    // }
     // Check if builder profile already exists
     const existingProfile = await BuilderProfile.findOne({ user });
     if (existingProfile) {
