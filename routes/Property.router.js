@@ -33,6 +33,15 @@ router.post('/builder-profile', authenticate, authorizeRoles('directBuilder', 'a
   }
 });
 
+router.get('/builder-profile', async (req, res) => {
+  try {
+    const profiles = await BuilderProfile.find();
+    res.json(profiles);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch builder profiles' });
+  }
+});
+
 router.get('/builder-profile/:id', async (req, res) => {
   try {
     const profile = await BuilderProfile.findById(req.params.id);
@@ -85,6 +94,16 @@ router.post('/project', authenticate, authorizeRoles('directBuilder', 'admin', '
   }
 });
 
+router.get('/project', async (req, res) => {
+  try {
+    const projects = await Project.find().populate('builder', 'companyName');
+    res.json(projects);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch projects' });
+  }
+});
+
+
 router.get('/projects/by-builder/:builderId', async (req, res) => {
   try {
     const projects = await Project.find({ builder: req.params.builderId });
@@ -134,6 +153,17 @@ router.post('/building', authenticate, authorizeRoles('directBuilder', 'admin', 
     res.status(400).json({ error: err.message });
   }
 });
+
+
+router.get('/buildings', async (req, res) => {
+  try {
+    const buildings = await Building.find().populate('project', 'projectName'); // Optional: populate project info
+    res.json(buildings);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 
 router.get('/buildings/by-project/:projectId', async (req, res) => {
   try {
@@ -186,6 +216,16 @@ router.post('/floor', authenticate, authorizeRoles('directBuilder', 'admin', 'su
 });
 
 
+router.get('/floors', async (req, res) => {
+  try {
+    const floors = await Floor.find().populate('building', 'buildingName');
+    res.json(floors);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+
 router.get('/floors/by-building/:buildingId', async (req, res) => {
   try {
     const floors = await Floor.find({ building: req.params.buildingId });
@@ -231,6 +271,22 @@ router.post('/unit', authenticate, authorizeRoles('directBuilder', 'admin', 'sup
     const unit = new Unit(req.body);
     await unit.save();
     res.status(201).json(unit);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+router.get('/units', async (req, res) => {
+  try {
+    const units = await Unit.find()
+      .populate({
+        path: 'floor',
+        populate: {
+          path: 'building',
+          populate: 'project'
+        }
+      }); 
+    res.json(units);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
