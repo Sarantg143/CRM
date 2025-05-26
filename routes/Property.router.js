@@ -75,10 +75,10 @@ router.post('/project', authenticate, authorizeRoles('directBuilder', 'admin', '
   try {
     const { builder, projectName } = req.body;
 
-    const builderExists = await BuilderProfile.findById(builder);
-    if (!builderExists) {
-      return res.status(404).json({ message: 'Builder not found.' });
-    }
+    // const builderExists = await BuilderProfile.findById(builder);
+    // if (!builderExists) {
+    //   return res.status(404).json({ message: 'Builder not found.' });
+    // }
 
     //Check for duplicate project name under the same builder
     const existingProject = await Project.findOne({ builder, projectName });
@@ -137,10 +137,10 @@ router.post('/building', authenticate, authorizeRoles('directBuilder', 'admin', 
   try {
     const { project, buildingName } = req.body;
 
-    const projectExists = await Project.findById(project);
-    if (!projectExists) {
-      return res.status(404).json({ message: 'Project not found. Please provide a valid project ID.' });
-    }
+    // const projectExists = await Project.findById(project);
+    // if (!projectExists) {
+    //   return res.status(404).json({ message: 'Project not found. Please provide a valid project ID.' });
+    // }
 
     const duplicateBuilding = await Building.findOne({ project, buildingName });
     if (duplicateBuilding) {
@@ -198,10 +198,10 @@ router.post('/floor', authenticate, authorizeRoles('directBuilder', 'admin', 'su
   try {
     const { building, floorNumber } = req.body;
 
-    const buildingExists = await Building.findById(building);
-    if (!buildingExists) {
-      return res.status(404).json({ message: 'Building not found. Please provide a valid building ID.' });
-    }
+    // const buildingExists = await Building.findById(building);
+    // if (!buildingExists) {
+    //   return res.status(404).json({ message: 'Building not found. Please provide a valid building ID.' });
+    // }
 
     const existingFloor = await Floor.findOne({ building, floorNumber });
     if (existingFloor) {
@@ -259,10 +259,10 @@ router.post('/unit', authenticate, authorizeRoles('directBuilder', 'admin', 'sup
   try {
     const { floor, unitNumber } = req.body;
 
-    const floorExists = await Floor.findById(floor);
-    if (!floorExists) {
-      return res.status(404).json({ message: 'Floor not found. Please provide a valid floor ID.' });
-    }
+    // const floorExists = await Floor.findById(floor);
+    // if (!floorExists) {
+    //   return res.status(404).json({ message: 'Floor not found. Please provide a valid floor ID.' });
+    // }
 
     const duplicate = await Unit.findOne({ floor, unitNumber });
     if (duplicate) {
