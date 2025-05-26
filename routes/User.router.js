@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../models/User.model');
+const Unit = require('../models/Property/Unit.model');
 const { authenticate, authorizeRoles } = require('../middleware/auth');
 
 const router = express.Router();
@@ -77,6 +78,61 @@ router.patch('/:id/role', authenticate, authorizeRoles('admin', 'superAdmin'), a
     res.json({ message: 'Role updated', user: updatedUser });
   } catch (err) {
     res.status(500).json({ message: 'Role change failed', error: err.message });
+  }
+});
+
+
+// GET liked units of a user
+router.get('/:id/liked-units', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate('likedUnits');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({ likedUnits: user.likedUnits });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch liked units', error: err.message });
+  }
+});
+
+// POST to like a unit
+router.post('/:id/like-unit/:unitId', authenticate, async (req, res) => {
+  try {
+    const { id, unitId } = req.params;
+    if (req.user._id.toString() !== id && !['admin', 'superAdmin'].includes(req.user.role)) {
+      return res.status(403).json({ message: 'Forbidden: Not allowed to like for this user' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user.likedUnits.includes(unitId)) {
+      user.likedUnits.push(unitId);
+      await user.save();
+    }
+
+    res.json({ message: 'Unit liked', likedUnits: user.likedUnits });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to like unit', error: err.message });
+  }
+});
+
+// DELETE to unlike a unit
+router.delete('/:id/unlike-unit/:unitId', authenticate, async (req, res) => {
+  try {
+    const { id, unitId } = req.params;
+    if (req.user._id.toString() !== id && !['admin', 'superAdmin'].includes(req.user.role)) {
+      return res.status(403).json({ message: 'Forbidden: Not allowed to unlike for this user' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.likedUnits = user.likedUnits.filter(u => u.toString() !== unitId);
+    await user.save();
+
+    res.json({ message: 'Unit unliked', likedUnits: user.likedUnits });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to unlike unit', error: err.message });
   }
 });
 

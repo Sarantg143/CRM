@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   profilebanner: { type: String},
   phone: { type: String},
   companyName:{ type: String},
+  likedUnits: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Unit' }],
 
   isActive:{ type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
@@ -25,12 +26,12 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpiry: {type:Date}},{ timestamps: true });
 
 
-  userSchema.pre('save', function (next) {
-  if (this.role === 'directBuilder' && !this.companyName) {
-    next(new Error('DirectBuilder must have companyName'));
-  } else {
-    next();
-  }
-});
+  // userSchema.pre('save', function (next) {
+  // if (this.role === 'directBuilder' && !this.companyName) {
+  //   next(new Error('DirectBuilder must have companyName'));
+  // } else {
+  //   next();
+  // }
+// });
 
 module.exports = mongoose.model('User', userSchema);
