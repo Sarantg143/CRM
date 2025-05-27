@@ -5,24 +5,36 @@ const Broker = require('../models/Broker.model');
 const { authenticate, authorizeRoles } = require('../middleware/auth');
 
 // Create broker profile
-router.post('/', authenticate, authorizeRoles('broker', 'admin', 'superAdmin'), async (req, res) => {
-  try {
-    const exists = await Broker.findOne({ user: req.user._id });
-    if (exists) {
-      return res.status(400).json({ message: 'Broker profile already exists.' });
+router.post( '/',authenticate,authorizeRoles('broker', 'admin', 'superAdmin'),
+  async (req, res) => {
+    try {
+      let userId;
+      if (['admin', 'superAdmin'].includes(req.user.role)) {
+        if (!req.body.user) {
+          return res.status(400).json({ message: 'User ID is required for admin to create a broker profile.' });
+        }
+        userId = req.body.user;
+      } else {
+       
+        userId = req.user._id;
+      }
+      const exists = await Broker.findOne({ user: userId });
+      if (exists) {
+        return res.status(400).json({ message: 'Broker profile already exists for this user.' });
+      }
+
+      const broker = new Broker({
+        ...req.body,
+        user: userId,
+      });
+
+      await broker.save();
+      res.status(201).json({ message: 'Broker profile created.', broker });
+    } catch (err) {
+      res.status(400).json({ message: err.message });
     }
-
-    const broker = new Broker({
-      ...req.body,
-      user: req.user._id
-    });
-
-    await broker.save();
-    res.status(201).json(broker);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
   }
-});
+);
 
 // Get all brokers with property count
 router.get('/all', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
