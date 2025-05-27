@@ -81,6 +81,29 @@ router.put('/:id/assign-properties', authenticate, authorizeRoles('admin', 'supe
   }
 });
 
+router.put('/:id', authenticate, authorizeRoles('broker', 'admin', 'superAdmin'), async (req, res) => {
+  try {
+    const broker = await Broker.findById(req.params.id);
+    if (!broker) return res.status(404).json({ message: 'Broker not found' });
+
+    if (
+      broker.user.toString() !== req.user._id.toString() &&
+      !['admin', 'superAdmin'].includes(req.user.role)
+    ) {
+      return res.status(403).json({ message: 'Not allowed to edit this profile' });
+    }
+    Object.assign(broker, req.body);
+    if (req.body.properties) {
+      broker.activeListings = req.body.properties.length;
+    }
+    await broker.save();
+    res.json({ message: 'Broker profile updated', broker });
+  } catch (err) {
+    res.status(400).json({ message: 'Update failed', error: err.message });
+  }
+});
+
+
 router.get('/by-property/:unitId', authenticate, async (req, res) => {
   try {
     const { unitId } = req.params;
