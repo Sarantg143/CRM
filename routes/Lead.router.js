@@ -57,7 +57,7 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // Get all leads - Admin only (can filter or paginate later)
-router.get('/', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
+router.get('/', authenticate,  async (req, res) => {
   try {
     const leads = await Lead.find()
       .populate('assignedTo', 'name email role')
@@ -71,7 +71,7 @@ router.get('/', authenticate, authorizeRoles('admin', 'superAdmin'), async (req,
 });
 
 // Get leads assigned to logged in directBuilder
-router.get('/assigned', authenticate, authorizeRoles('directBuilder'), async (req, res) => {
+router.get('/assigned', authenticate,async (req, res) => {
   try {
     const leads = await Lead.find({ assignedTo: req.user._id })
       .populate('assignedTo', 'name email')
@@ -85,7 +85,7 @@ router.get('/assigned', authenticate, authorizeRoles('directBuilder'), async (re
 });
 
 // Get leads created by logged-in user
-router.get('/my-leads', authenticate, authorizeRoles('user'), async (req, res) => {
+router.get('/my-leads', authenticate,  async (req, res) => {
   try {
     const leads = await Lead.find({ createdBy: req.user._id })
       .populate('assignedTo', 'name email')
