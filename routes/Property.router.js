@@ -293,6 +293,28 @@ router.get('/units', async (req, res) => {
   }
 });
 
+router.get('/unit/:id', async (req, res) => {
+  try {
+    const unit = await Unit.findById(req.params.id)
+      .populate({
+        path: 'floor',
+        populate: {
+          path: 'building',
+          populate: 'project'
+        }
+      });
+
+    if (!unit) {
+      return res.status(404).json({ message: 'Unit not found' });
+    }
+
+    res.json(unit);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+
 router.get('/units/by-floor/:floorId', async (req, res) => {
   try {
     const units = await Unit.find({ floor: req.params.floorId });
