@@ -16,6 +16,10 @@ const leadSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+   image: {
+    type: String, 
+    default: '', 
+  },
   interestedIn: {
     // Could be builder, project, or property unit, optional references
     builder: { type: mongoose.Schema.Types.ObjectId, ref: 'BuilderProfile' },
