@@ -52,6 +52,53 @@ router.get('/builder-profile/:id', async (req, res) => {
   }
 });
 
+router.get('/builder-profile/:id/full-details', async (req, res) => {
+  try {
+    const builderId = req.params.id; 
+    const projects = await Project.find({ builder: builderId });
+
+    const detailedProjects = await Promise.all(
+      projects.map(async (project) => {
+        const buildings = await Building.find({ project: project._id });
+
+        const detailedBuildings = await Promise.all(
+          buildings.map(async (building) => {
+            const floors = await Floor.find({ building: building._id });
+
+            const detailedFloors = await Promise.all(
+              floors.map(async (floor) => {
+                const units = await Unit.find({ floor: floor._id });
+                return {
+                  ...floor.toObject(),
+                  units,
+                };
+              })
+            );
+
+            return {
+              ...building.toObject(),
+              floors: detailedFloors,
+            };
+          })
+        );
+        
+        return {
+          ...project.toObject(),
+          buildings: detailedBuildings,
+        };
+      })
+    );
+    res.json({
+      builderProfileId: builderId,
+      projects: detailedProjects,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch builder project hierarchy' });
+  }
+});
+
 router.put('/builder-profile/:id', authenticate, authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
   try {
     const profile = await BuilderProfile.findByIdAndUpdate(req.params.id, req.body, { new: true });

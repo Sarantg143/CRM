@@ -56,4 +56,54 @@ router.get('/summary', async (req, res) => {
   }
 });
 
+router.get('/', async (req, res) => {
+  try {
+    const [
+      totalUsers,
+      totalBuilders,
+      totalProjects,
+      totalBuildings,
+      totalFloors,
+      totalUnits,
+      totalTransactions,
+      completedTransactionTotal,
+      pendingTransactions,
+      refundedTransactions
+    ] = await Promise.all([
+      User.countDocuments(),
+      BuilderProfile.countDocuments(),
+      Project.countDocuments(),
+      Building.countDocuments(),
+      Floor.countDocuments(),
+      Unit.countDocuments(),
+      Transaction.countDocuments(),
+      Transaction.aggregate([
+        { $match: { status: 'completed' } },
+        { $group: { _id: null, totalAmount: { $sum: '$amount' } } }
+      ]),
+      Transaction.countDocuments({ status: 'pending' }),
+      Transaction.countDocuments({ status: 'refunded' })
+    ]);
+
+    const totalCompletedAmount = completedTransactionTotal[0]?.totalAmount || 0;
+
+    res.json({
+      users: totalUsers,
+      builders: totalBuilders,
+      projects: totalProjects,
+      buildings: totalBuildings,
+      floors: totalFloors,
+      units: totalUnits,
+      transactions: {
+        totalTransactions: totalTransactions,
+        totalcompletedAmount: totalCompletedAmount,
+        pendingCount: pendingTransactions,
+        refundedCount: refundedTransactions
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Report fetch failed', error: err.message });
+  }
+});
+
 module.exports = router;
