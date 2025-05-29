@@ -52,6 +52,20 @@ router.get('/builder-profile/:id', async (req, res) => {
   }
 });
 
+router.get('/builder-profile/user/:userId', async (req, res) => {
+  try {
+    const profile = await BuilderProfile.findOne({ user: req.params.userId });
+    
+    if (!profile) {
+      return res.status(404).json({ error: 'Builder profile not found for this user' });
+    }
+    res.json(profile);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 router.get('/builder-profile/:id/full-details', async (req, res) => {
   try {
     const builderId = req.params.id; 
@@ -81,7 +95,7 @@ router.get('/builder-profile/:id/full-details', async (req, res) => {
             };
           })
         );
-        
+
         return {
           ...project.toObject(),
           buildings: detailedBuildings,
