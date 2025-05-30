@@ -30,7 +30,7 @@ router.post('/', authenticate, async (req, res) => {
 router.get(
   '/',
   authenticate,
-  authorizeRoles('admin', 'superAdmin'),
+  authorizeRoles('admin', 'superAdmin','directBuilder'),
   async (req, res) => {
     try {
       const transactions = await Transaction.find()
@@ -57,7 +57,7 @@ router.get('/my', authenticate, async (req, res) => {
 });
 
 // Update transaction status (Admin only)
-router.put('/:id/status', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
+router.put('/:id/status', authenticate, authorizeRoles('admin', 'superAdmin','directBuilder'), async (req, res) => {
   try {
     const { status } = req.body;
     if (!['pending', 'completed', 'failed', 'refunded'].includes(status)) {
