@@ -1,27 +1,22 @@
 const mongoose = require('mongoose');
 
 const leadSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true,
+  user: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User', 
+    required: true 
   },
-  email: {
+  userName: {
     type: String,
-    required: true,
-    lowercase: true,
-    trim: true,
+    required: true
   },
-  phone: {
+  userEmail: {
     type: String,
-    required: true,
   },
-   image: {
-    type: String, 
-    default: '', 
+  userPhone: {
+    type: String,
   },
   interestedIn: {
-    // Could be builder, project, or property unit, optional references
     builder: { type: mongoose.Schema.Types.ObjectId, ref: 'BuilderProfile' },
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project' },
     unit: { type: mongoose.Schema.Types.ObjectId, ref: 'Unit' },
@@ -37,7 +32,6 @@ const leadSchema = new mongoose.Schema({
     default: 'new',
   },
   assignedTo: {
-    // Which directBuilder or admin is handling this lead
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
@@ -48,10 +42,16 @@ const leadSchema = new mongoose.Schema({
       addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     }
   ],
+  initialPaymentDone: {
+    type: Boolean,
+    default: false,
+  },
+  bookingPageVisited: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
-
-module.exports = mongoose.model('Lead', leadSchema);
