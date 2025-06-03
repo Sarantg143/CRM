@@ -9,6 +9,11 @@ const buildingSchema = new mongoose.Schema({
   videos: [String],
   description: String,
 
+  buildingArea: { type: String },                
+  priceRange: { type: String },                  
+  units: { type: Number },                       
+  type: { type: String },  // "Residential", "Commercial"
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Building', buildingSchema);
