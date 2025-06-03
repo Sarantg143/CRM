@@ -24,6 +24,11 @@ const unitSchema = new mongoose.Schema({
   photos:  [ unitMediaSchema ],
   videos: [ unitMediaSchema ],
   plan3D:  [ unitMediaSchema ],
+  coordinates: {
+    type: Map,
+    of: [Number],
+    default: {}
+  },
   description: String
 }, { timestamps: true });
 
