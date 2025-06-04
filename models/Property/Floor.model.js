@@ -5,11 +5,11 @@ const floorSchema = new mongoose.Schema({
   floorNumber: Number,
   totalUnits: Number,
   image: { type: String }, // floor key plan
-  coordinates: {
-    type: Map,
-    of: [Number],
-    default: {}
-  }
+  // coordinates: {
+  //   type: Map,
+  //   of: [Number],
+  //   default: {}
+  // }
 });
 
 module.exports = mongoose.model('Floor', floorSchema);
