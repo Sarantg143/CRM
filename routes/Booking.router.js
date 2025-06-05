@@ -5,10 +5,9 @@ const Unit = require('../models/Property/Unit.model');
 const { authenticate, authorizeRoles } = require('../middleware/auth');
 
 // Create booking (User)
-router.post('/book', authenticate, authorizeRoles('user'), async (req, res) => {
+router.post('/', authenticate, authorizeRoles('user'), async (req, res) => {
   try {
     const { unitId, saveForLater = false } = req.body;
-
     const unit = await Unit.findById(unitId).populate({
       path: 'floor',
       populate: {
@@ -20,8 +19,19 @@ router.post('/book', authenticate, authorizeRoles('user'), async (req, res) => {
       }
     });
 
-    if (!unit) return res.status(404).json({ message: 'Unit not found' });
+    if (!unit) {
+      return res.status(404).json({ message: 'Unit not found' });
+    }
 
+    const existingBooking = await Booking.findOne({ unit: unitId, savedForLater: false });
+
+    if (existingBooking) {
+      return res.status(200).json({
+        message: 'Unit already sold',
+        existing: true,
+        booking: existingBooking
+      });
+    }
     const builderId = unit.floor.building.project.builder._id;
 
     const booking = new Booking({
@@ -32,14 +42,20 @@ router.post('/book', authenticate, authorizeRoles('user'), async (req, res) => {
     });
 
     await booking.save();
-    res.status(201).json(booking);
+
+    res.status(201).json({
+      message: 'Booking created',
+      booking
+    });
+
   } catch (error) {
+    console.error('Booking error:', error);
     res.status(500).json({ message: 'Booking failed', error });
   }
 });
 
 // Create booking (User)
-router.post('/', authenticate, authorizeRoles('user'), async (req, res) => {
+router.post('/book', authenticate, authorizeRoles('user'), async (req, res) => {
   try {
     const { unitId, saveForLater = false } = req.body;
 
