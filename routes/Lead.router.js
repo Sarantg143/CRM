@@ -18,6 +18,44 @@ async function checkExists(id, model) {
   return !!exists;
 }
 
+// POST /api/leads/auto
+router.post('/auto', authenticate, async (req, res) => {
+  try {
+    const { unitId } = req.body;
+    const user = req.user;
+
+    if (!unitId || !mongoose.Types.ObjectId.isValid(unitId)) {
+      return res.status(400).json({ error: 'Valid unitId is required' });
+    }
+
+    // Optional: check if unit exists
+    const unitExists = await Unit.exists({ _id: unitId });
+    if (!unitExists) {
+      return res.status(404).json({ error: 'Unit not found' });
+    }
+
+    const lead = await Lead.create({
+      user: user._id,
+      userName: user.name,
+      userEmail: user.email || '',
+      userPhone: user.phone || '',
+      interestedIn: {
+        unit: unitId,
+      },
+      source: 'website',
+      status: 'new',
+      initialPaymentDone: false,
+      bookingPageVisited: true,
+    });
+
+    res.status(201).json({ message: 'Lead created automatically', lead });
+  } catch (err) {
+    console.error('Auto-lead error:', err);
+    res.status(500).json({ error: 'Failed to create lead', details: err.message });
+  }
+});
+
+
 // Create a new lead
 router.post('/', authenticate, async (req, res) => {
   try {
@@ -48,7 +86,7 @@ router.post('/', authenticate, async (req, res) => {
 
     // Phone is mandatory and not from login, so validate it here
   if (!leadData.userPhone) return res.status(400).json({ error: 'Phone number is required' });
-  
+
     const newLead = new Lead(leadData);
     await newLead.save();
 
@@ -58,6 +96,33 @@ router.post('/', authenticate, async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+
+// Get lead by ID
+router.get('/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid lead ID' });
+    }
+
+    const lead = await Lead.findById(id)
+      .populate('assignedTo', 'name email role')
+      .populate('interestedIn.builder', 'companyName')
+      .populate('interestedIn.project', 'projectName')
+      .populate('interestedIn.unit', 'unitNumber');
+
+    if (!lead) {
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+
+    res.json(lead);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Get all leads (admin)
 router.get('/', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
@@ -72,6 +137,8 @@ router.get('/', authenticate, authorizeRoles('admin', 'superAdmin'), async (req,
     res.status(500).json({ error: error.message });
   }
 });
+
+
 
 // Get leads assigned to logged-in directBuilder
 router.get('/assigned', authenticate, authorizeRoles('directBuilder'), async (req, res) => {
