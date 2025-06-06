@@ -12,7 +12,8 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// Create Razorpay Order 
+// // Create Razorpay Order 
+// ✅ Create Order
 router.post('/', authenticate, async (req, res) => {
   try {
     const { amount, builderId, propertyId } = req.body;
@@ -24,7 +25,6 @@ router.post('/', authenticate, async (req, res) => {
     const amountInPaise = amount * 100;
     const userId = req.user._id.toString();
 
-    // Create Razorpay order with notes to track user, builder, property
     const order = await razorpay.orders.create({
       amount: amountInPaise,
       currency: 'INR',
@@ -37,62 +37,28 @@ router.post('/', authenticate, async (req, res) => {
       },
     });
 
-    res.status(201).json({
-      message: 'Order created',
-      order,
+    // Save transaction
+    await Transaction.create({
+      user: userId,
+      builder: builderId || null,
+      property: propertyId || null,
+      amount,
+      status: 'created',
+      razorpayOrderId: order.id,
     });
+
+    res.status(201).json({ message: 'Order created', order });
   } catch (err) {
     console.error('Create order error:', err);
     res.status(500).json({ message: 'Could not create order', error: err.message });
   }
 });
 
-// Razorpay Webhook to record payment captured event
-router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  const signature = req.headers['x-razorpay-signature'];
-  const body = JSON.stringify(req.body);
-
-  // Verify webhook signature
-  const expectedSignature = crypto.createHmac('sha256', webhookSecret).update(body).digest('hex');
-  if (signature !== expectedSignature) {
-    return res.status(400).json({ message: 'Invalid webhook signature' });
-  }
-
-  const payload = req.body;
-
-  if (payload.event === 'payment.captured') {
-    try {
-      const payment = payload.payload.payment.entity;
-
-      const transaction = new Transaction({
-        user: payment.notes.userId,
-        builder: payment.notes.builderId,
-        property: payment.notes.propertyId,
-        amount: payment.amount / 100, // paise to INR
-        paymentMethod: payment.method,
-        status: 'completed',
-        remarks: 'Recorded from Razorpay webhook',
-        razorpayOrderId: payment.order_id,
-        razorpayPaymentId: payment.id,
-      });
-
-      await transaction.save();
-      return res.status(200).json({ message: 'Transaction recorded via webhook' });
-    } catch (err) {
-      return res.status(500).json({ message: 'Error recording transaction', error: err.message });
-    }
-  }
-
-  return res.status(200).json({ message: 'Webhook received but event not handled' });
-});
-
-// Verify Razorpay Payment Signature (called from frontend after payment success)
+// ✅ Verify from Frontend (after success)
 router.post('/verify', authenticate, async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
   try {
-  
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -117,6 +83,171 @@ router.post('/verify', authenticate, async (req, res) => {
     res.status(500).json({ message: 'Verification error', error: err.message });
   }
 });
+
+// ✅ Razorpay Webhook
+router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const signature = req.headers['x-razorpay-signature'];
+  const body = JSON.stringify(req.body);
+
+  const expectedSignature = crypto
+    .createHmac('sha256', webhookSecret)
+    .update(body)
+    .digest('hex');
+
+  if (signature !== expectedSignature) {
+    return res.status(400).json({ message: 'Invalid webhook signature' });
+  }
+
+  const payload = req.body;
+
+  if (payload.event === 'payment.captured') {
+    try {
+      const payment = payload.payload.payment.entity;
+
+      // Avoid duplicate
+      const existing = await Transaction.findOne({ razorpayOrderId: payment.order_id });
+      if (!existing) {
+        await Transaction.create({
+          user: payment.notes.userId,
+          builder: payment.notes.builderId || null,
+          property: payment.notes.propertyId || null,
+          amount: payment.amount / 100,
+          status: 'completed',
+          paymentMethod: payment.method,
+          razorpayOrderId: payment.order_id,
+          razorpayPaymentId: payment.id,
+          remarks: 'Recorded from Razorpay webhook',
+        });
+      } else {
+        // Optional: update status if not completed
+        if (existing.status !== 'completed') {
+          existing.status = 'completed';
+          existing.razorpayPaymentId = payment.id;
+          existing.paymentMethod = payment.method;
+          await existing.save();
+        }
+      }
+
+      return res.status(200).json({ message: 'Transaction recorded via webhook' });
+    } catch (err) {
+      return res.status(500).json({ message: 'Webhook DB error', error: err.message });
+    }
+  }
+
+  res.status(200).json({ message: 'Webhook received' });
+});
+
+
+
+
+
+
+
+// router.post('/', authenticate, async (req, res) => {
+//   try {
+//     const { amount, builderId, propertyId } = req.body;
+
+//     if (!amount || amount <= 0) {
+//       return res.status(400).json({ message: 'Valid amount is required' });
+//     }
+
+//     const amountInPaise = amount * 100;
+//     const userId = req.user._id.toString();
+
+//     // Create Razorpay order with notes to track user, builder, property
+//     const order = await razorpay.orders.create({
+//       amount: amountInPaise,
+//       currency: 'INR',
+//       receipt: `receipt_${Date.now()}`,
+//       payment_capture: 1,
+//       notes: {
+//         userId,
+//         builderId: builderId || '',
+//         propertyId: propertyId || '',
+//       },
+//     });
+
+//     res.status(201).json({
+//       message: 'Order created',
+//       order,
+//     });
+//   } catch (err) {
+//     console.error('Create order error:', err);
+//     res.status(500).json({ message: 'Could not create order', error: err.message });
+//   }
+// });
+
+// // Razorpay Webhook to record payment captured event
+// router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
+//   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+//   const signature = req.headers['x-razorpay-signature'];
+//   const body = JSON.stringify(req.body);
+
+//   // Verify webhook signature
+//   const expectedSignature = crypto.createHmac('sha256', webhookSecret).update(body).digest('hex');
+//   if (signature !== expectedSignature) {
+//     return res.status(400).json({ message: 'Invalid webhook signature' });
+//   }
+
+//   const payload = req.body;
+
+//   if (payload.event === 'payment.captured') {
+//     try {
+//       const payment = payload.payload.payment.entity;
+
+//       const transaction = new Transaction({
+//         user: payment.notes.userId,
+//         builder: payment.notes.builderId,
+//         property: payment.notes.propertyId,
+//         amount: payment.amount / 100, // paise to INR
+//         paymentMethod: payment.method,
+//         status: 'completed',
+//         remarks: 'Recorded from Razorpay webhook',
+//         razorpayOrderId: payment.order_id,
+//         razorpayPaymentId: payment.id,
+//       });
+
+//       await transaction.save();
+//       return res.status(200).json({ message: 'Transaction recorded via webhook' });
+//     } catch (err) {
+//       return res.status(500).json({ message: 'Error recording transaction', error: err.message });
+//     }
+//   }
+
+//   return res.status(200).json({ message: 'Webhook received but event not handled' });
+// });
+
+// // Verify Razorpay Payment Signature (called from frontend after payment success)
+// router.post('/verify', authenticate, async (req, res) => {
+//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+//   try {
+  
+//     const expectedSignature = crypto
+//       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+//       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+//       .digest('hex');
+
+//     if (expectedSignature !== razorpay_signature) {
+//       return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+//     }
+
+//     const transaction = await Transaction.findOneAndUpdate(
+//       { razorpayOrderId: razorpay_order_id },
+//       { status: 'completed', razorpayPaymentId: razorpay_payment_id },
+//       { new: true }
+//     );
+
+//     if (!transaction) {
+//       return res.status(404).json({ message: 'Transaction not found for order ID' });
+//     }
+
+//     res.json({ success: true, message: 'Payment verified', transaction });
+//   } catch (err) {
+//     res.status(500).json({ message: 'Verification error', error: err.message });
+//   }
+// });
 
 // Admin: Get all transactions
 router.get('/', authenticate, authorizeRoles('admin', 'superAdmin', 'directBuilder'), async (req, res) => {

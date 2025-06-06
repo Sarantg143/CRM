@@ -121,3 +121,55 @@ Headers:
 }
 
 ---------------------------------------------------
+
+import axios from 'axios';
+
+const handlePayment = async () => {
+  try {
+    // Step 1: Create order
+    const { data } = await axios.post(
+      '/api/transactions',
+      {
+        amount: 50000, // in INR
+        builderId: '682d91066314af6cbd021e80',
+        propertyId: '6837f58f41cf2faa935a7b9b'
+      },
+      { withCredentials: true } // if using cookies/token-based auth
+    );
+
+    const order = data.order;
+
+    // Step 2: Open Razorpay checkout
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Razorpay key
+      amount: order.amount, // in paise
+      currency: order.currency,
+      name: 'Your App Name',
+      description: 'Property Payment',
+      image: '/logo.png',
+      order_id: order.id,
+      handler: async (response) => {
+        // Step 3: Verify payment
+        const verifyRes = await axios.post(
+          '/api/transactions/verify',
+          {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          },
+          { withCredentials: true }
+        );
+
+        alert('Payment Verified: ' + verifyRes.data.message);
+      },
+      notes: order.notes,
+      theme: { color: '#3399cc' }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (error) {
+    console.error('Payment Error:', error.response?.data || error.message);
+    alert('Payment failed');
+  }
+};
