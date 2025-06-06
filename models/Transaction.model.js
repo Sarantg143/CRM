@@ -6,7 +6,7 @@ const transactionSchema = new mongoose.Schema({
   property: { type: mongoose.Schema.Types.ObjectId, ref: 'Unit' },
   amount: { type: Number, required: true },
   paymentMethod: { type: String, enum: ['credit_card', 'debit_card', 'net_banking', 'upi', 'cash', 'other'], default: 'other' },
-  status: { type: String, enum: ['pending', 'completed', 'failed', 'refunded'], default: 'pending' },
+  status: { type: String, enum: ['created','pending', 'completed', 'failed', 'refunded'], default: 'pending' },
   remarks: { type: String },
   razorpayOrderId: { type: String },
   razorpayPaymentId: { type: String },
