@@ -12,8 +12,7 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// // Create Razorpay Order 
-// ✅ Create Order
+// Create Razorpay Order 
 router.post('/', authenticate, async (req, res) => {
   try {
     const { amount, builderId, propertyId } = req.body;
@@ -54,7 +53,7 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-// ✅ Verify from Frontend (after success)
+// Verify from Frontend (after success)
 router.post('/verify', authenticate, async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
@@ -84,7 +83,7 @@ router.post('/verify', authenticate, async (req, res) => {
   }
 });
 
-// ✅ Razorpay Webhook
+//Razorpay Webhook
 router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
   const signature = req.headers['x-razorpay-signature'];
@@ -120,7 +119,6 @@ router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
           remarks: 'Recorded from Razorpay webhook',
         });
       } else {
-        // Optional: update status if not completed
         if (existing.status !== 'completed') {
           existing.status = 'completed';
           existing.razorpayPaymentId = payment.id;
@@ -137,10 +135,6 @@ router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
 
   res.status(200).json({ message: 'Webhook received' });
 });
-
-
-
-
 
 
 
