@@ -11,7 +11,7 @@ const leadSchema = new mongoose.Schema({
     required: true
   },
   userEmail: {
-    type: String,
+    type: String, 
   },
   userPhone: {
     type: String,

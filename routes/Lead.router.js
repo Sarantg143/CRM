@@ -47,8 +47,8 @@ router.post('/', authenticate, async (req, res) => {
     if (!createdByExists) return res.status(400).json({ error: 'Invalid createdBy user ID' });
 
     // Phone is mandatory and not from login, so validate it here
-    if (!leadData.phone) return res.status(400).json({ error: 'Phone number is required' });
-
+  if (!leadData.userPhone) return res.status(400).json({ error: 'Phone number is required' });
+  
     const newLead = new Lead(leadData);
     await newLead.save();
 
