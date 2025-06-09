@@ -22,10 +22,64 @@ const projectSchema = new mongoose.Schema({
     enum: ['Plot', 'Apartment', 'Villa', 'Commercial'],
     required: true
   },
-  possessionDate: Date,
-  description: String,
+   type: {
+    type: String, 
+  },
+  status: {
+    type: String, // Example: "Ready to move", "Under construction"
+   
+  },
+  price: {
+    type: Number,
+    
+  },
+  bedrooms: {
+    type: Number,
+    
+  },
+  bathrooms: {
+    type: Number,
+    
+  },
+  squareFeet: {
+    type: Number,
+   
+  },
+  units: {
+    type: Number
+  },
+  kitchen: {
+    type: String 
+  },
+  carpetArea: {
+    type: String // E.g., "1800 sqft"
+  },
+  mapViewUrl: {
+    type: String
+  },
+  phase: {
+    type: String
+  },
+  floor: {
+    type: String // Floor number or range
+  },
+  loanDetails: {
+    type: String
+  },
+  downPayment: {
+    type: Number
+  },
+  possessionDate:{
+    type: Date
+  },
+  description: {
+    type: String,
+    required: true
+  },
   amenities: [String],
-  specifications: String,
+  specifications: {
+    type: String
+  },
   media: {
     photos: [ projectMediaSchema ],
     videos:  [ projectMediaSchema ],
