@@ -3,6 +3,7 @@ const router = express.Router();
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const Transaction = require('../models/Transaction.model');
+const Booking = require('../models/Booking.model');
 const { authenticate, authorizeRoles } = require('../middleware/auth');
 require('dotenv').config();
 
@@ -136,6 +137,124 @@ router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
   res.status(200).json({ message: 'Webhook received' });
 });
 
+
+
+// -------------------------------------------------------------------------------------
+
+// router.post('/verify', authenticate, async (req, res) => {
+//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+//   try {
+//     const expectedSignature = crypto
+//       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+//       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+//       .digest('hex');
+
+//     if (expectedSignature !== razorpay_signature) {
+//       return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+//     }
+
+//     const transaction = await Transaction.findOneAndUpdate(
+//       { razorpayOrderId: razorpay_order_id },
+//       { status: 'completed', razorpayPaymentId: razorpay_payment_id },
+//       { new: true }
+//     );
+
+//     if (!transaction) {
+//       return res.status(404).json({ message: 'Transaction not found for order ID' });
+//     }
+
+//     const booking = await Booking.findOneAndUpdate(
+//       {
+//         user: transaction.user,
+//         unit: transaction.property, // Assuming 'property' is the same as 'unit'
+//         builder: transaction.builder,
+//       },
+//       { status: 'confirmed' },
+//       { new: true }
+//     );
+
+//     if (!booking) {
+//       return res.status(404).json({ message: 'Booking not found to update' });
+//     }
+
+//     res.json({
+//       success: true,
+//       message: 'Payment verified and booking confirmed',
+//       transaction,
+//       booking
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: 'Verification error', error: err.message });
+//   }
+// });
+
+// router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
+//   const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+//   const signature = req.headers['x-razorpay-signature'];
+//   const body = JSON.stringify(req.body);
+
+//   const expectedSignature = crypto
+//     .createHmac('sha256', webhookSecret)
+//     .update(body)
+//     .digest('hex');
+
+//   if (signature !== expectedSignature) {
+//     return res.status(400).json({ message: 'Invalid webhook signature' });
+//   }
+
+//   const payload = req.body;
+
+//   if (payload.event === 'payment.captured') {
+//     try {
+//       const payment = payload.payload.payment.entity;
+
+//       let transaction = await Transaction.findOne({ razorpayOrderId: payment.order_id });
+
+//       if (!transaction) {
+//         transaction = await Transaction.create({
+//           user: payment.notes.userId,
+//           builder: payment.notes.builderId || null,
+//           property: payment.notes.propertyId || null,
+//           amount: payment.amount / 100,
+//           status: 'completed',
+//           paymentMethod: payment.method,
+//           razorpayOrderId: payment.order_id,
+//           razorpayPaymentId: payment.id,
+//           remarks: 'Recorded from Razorpay webhook',
+//         });
+//       } else if (transaction.status !== 'completed') {
+//         transaction.status = 'completed';
+//         transaction.razorpayPaymentId = payment.id;
+//         transaction.paymentMethod = payment.method;
+//         await transaction.save();
+//       }
+
+//       // Update booking
+//       const booking = await Booking.findOneAndUpdate(
+//         {
+//           user: transaction.user,
+//           unit: transaction.property, // Again, assuming 'property' means 'unit'
+//           builder: transaction.builder,
+//         },
+//         { status: 'confirmed' },
+//         { new: true }
+//       );
+
+//       res.status(200).json({
+//         message: 'Transaction recorded and booking confirmed via webhook',
+//         transaction,
+//         booking
+//       });
+//     } catch (err) {
+//       return res.status(500).json({ message: 'Webhook DB error', error: err.message });
+//     }
+//   } else {
+//     res.status(200).json({ message: 'Webhook received, event not handled' });
+//   }
+// });
+
+// -------------------------------------------------------------------------------------
 
 
 // router.post('/', authenticate, async (req, res) => {
