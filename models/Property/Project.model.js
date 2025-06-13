@@ -33,15 +33,15 @@ const projectSchema = new mongoose.Schema({
     type: Number,
     
   },
-  bedrooms: {
+  bed: {
     type: Number,
     
   },
-  bathrooms: {
+  bath: {
     type: Number,
     
   },
-  squareFeet: {
+  sqft: {
     type: Number,
    
   },
