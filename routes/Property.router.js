@@ -194,7 +194,9 @@ router.delete('/project/:id', authenticate, authorizeRoles('admin', 'superAdmin'
 });
 
 // --- Building ---
-router.post('/building',  authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
+// router.post('/building', authenticate, authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
+router.post('/building', async (req, res) => {
+  
   try {
     const { project, buildingName } = req.body;
 
@@ -236,7 +238,8 @@ router.get('/buildings/by-project/:projectId', async (req, res) => {
   }
 });
 
-router.put('/building/:id', authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
+// router.put('/building/:id', authenticate, authorizeRoles('directBuilder', 'admin', 'superAdmin'), async (req, res) => {
+router.put('/building/:id',  async (req, res) => {
   try {
     const building = await Building.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(building);
