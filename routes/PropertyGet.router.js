@@ -155,4 +155,51 @@ router.get('/floor/:floorId', async (req, res) => {
 });
 
 
+router.get('/landing-filter', async (req, res) => {
+  try {
+    const { city, area, propertyType, minPrice, maxPrice } = req.query;
+
+    const match = {
+      ...(city && { 'location.city': city }),
+      ...(area && { 'location.area': area }),
+      ...(propertyType && { propertyType }),
+      ...(minPrice && maxPrice && {
+        price: { $gte: parseInt(minPrice), $lte: parseInt(maxPrice) }
+      })
+    };
+
+    const projects = await Project.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: '$builder',
+          projects: { $push: '$$ROOT' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'builderprofiles',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'builderProfile'
+        }
+      },
+      { $unwind: '$builderProfile' },
+      {
+        $project: {
+          _id: 0,
+          builder: '$builderProfile',
+          projects: 1
+        }
+      }
+    ]);
+
+    res.status(200).json({ success: true, data: projects });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
+
 module.exports = router;
