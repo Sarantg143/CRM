@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
   },
   profilepic:  { type: String},
   profilebanner: { type: String},
-  phone: { type: String},
+  phone: { type: String, unique: true, sparse: true },
+
   companyName:{ type: String},
   likedUnits: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Unit' }],
 

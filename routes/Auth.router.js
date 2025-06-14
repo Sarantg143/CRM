@@ -28,15 +28,15 @@ const createToken = (user) => {
 // Signup 
 router.post('/signup', async (req, res) => {
   try {
-    const { name, username, email, password } = req.body;
+    const { name, username, email, password, phone } = req.body;
 
-    if (!name || !username || !email || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!name || !username || !email || !password || !phone) {
+      return res.status(400).json({ message: 'All fields are required including phone' });
     }
 
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    const existingUser = await User.findOne({ $or: [{ email }, { username }, { phone }] });
     if (existingUser) {
-      return res.status(400).json({ message: 'Email or username already in use' });
+      return res.status(400).json({ message: 'Email, username, or phone already in use' });
     }
 
     const salt = await bcrypt.genSalt(12);
@@ -46,14 +46,15 @@ router.post('/signup', async (req, res) => {
       name,
       username,
       email,
+      phone,
       password: hashedPassword,
-      role: 'user'  
+      role: 'user'
     });
 
     await newUser.save();
-    await sendWelcomeEmail(email, username);
+    await sendWelcomeEmail(email, username); // Optional
 
-    const token = createToken(newUser);
+    const token = createToken(newUser); // Assumes JWT function
 
     res.status(201).json({
       message: 'Signup successful',
@@ -63,6 +64,7 @@ router.post('/signup', async (req, res) => {
         name: newUser.name,
         username: newUser.username,
         email: newUser.email,
+        phone: newUser.phone,
         role: newUser.role
       }
     });
@@ -70,6 +72,7 @@ router.post('/signup', async (req, res) => {
     res.status(500).json({ message: 'Signup failed', error: error.message });
   }
 });
+
 
 // Login (email or username)
 router.post('/login', async (req, res) => {
