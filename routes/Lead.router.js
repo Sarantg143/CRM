@@ -190,7 +190,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'superAdmin', 'directBu
 });
 
 // Delete lead - admin only
-router.delete('/:id', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
+router.delete('/:id', authenticate, authorizeRoles('admin', 'superAdmin','directBuilder'), async (req, res) => {
   try {
     const leadId = req.params.id;
     const deletedLead = await Lead.findByIdAndDelete(leadId);
