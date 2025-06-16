@@ -5,7 +5,7 @@ const { authenticate, authorizeRoles } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
+router.get('/', authenticate, authorizeRoles('admin', 'superAdmin','directBuilder'), async (req, res) => {
   try {
     const users = await User.find().select('-password');
     res.json(users);
