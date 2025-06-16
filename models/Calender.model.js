@@ -6,6 +6,10 @@ const EventSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
   title: {
     type: String,
     required: [true, 'Event title is required'],
@@ -18,15 +22,13 @@ const EventSchema = new mongoose.Schema({
     type: Date,
     required: [true, 'End date is required'],
   },
-  duration: {
-    type: Number, 
-  },
+  duration: Number,
   isPublic: {
     type: Boolean,
     default: false,
   },
   link: String,
-});
+}, { timestamps: true });
 
 
 
