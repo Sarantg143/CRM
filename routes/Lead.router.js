@@ -141,16 +141,23 @@ router.get('/', authenticate, authorizeRoles('admin', 'superAdmin'), async (req,
 
 
 // Get leads assigned to logged-in directBuilder
-router.get('/assigned', authenticate, authorizeRoles('directBuilder'), async (req, res) => {
+router.get('/assigned/:id', async (req, res) => {
   try {
-    const leads = await Lead.find({ assignedTo: req.user._id })
+    const assignedToId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(assignedToId)) {
+      return res.status(400).json({ error: 'Invalid assignedTo ID' });
+    }
+
+    const leads = await Lead.find({ assignedTo: assignedToId })
       .populate('assignedTo', 'name email')
       .populate('interestedIn.builder', 'companyName')
       .populate('interestedIn.project', 'projectName')
       .populate('interestedIn.unit', 'unitNumber');
+
     res.json(leads);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
 
