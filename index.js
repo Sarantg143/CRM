@@ -42,6 +42,7 @@ const savedPropertRoutes = require("./routes/SavedProperty.router");
 const transactionRoutes = require("./routes/Transaction.router");
 const userRoutes = require("./routes/User.router");
 const dashboardRoutes = require("./routes/Dashboard.router");
+const newsletterRoutes = require("./routes/NewsLetter.router");
 
 // Middleware
 app.use(express.json());
@@ -66,6 +67,7 @@ app.use("/api/saved-property",savedPropertRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/newsletter",newsletterRoutes);
 
 
 
