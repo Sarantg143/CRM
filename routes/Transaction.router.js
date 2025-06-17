@@ -138,6 +138,19 @@ router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
   res.status(200).json({ message: 'Webhook received' });
 });
 
+
+// User: Get own transactions
+router.get('/my', authenticate, async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ user: req.user._id })
+      .populate('builder', 'companyName')
+      .populate('property', 'unitNumber');
+    res.json(transactions);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 router.get('/:builderId', authenticate, authorizeRoles('admin', 'superAdmin', 'directBuilder'), async (req, res) => {
   try {
     const builderId = req.params.builderId;
@@ -402,17 +415,7 @@ router.get('/', authenticate, authorizeRoles('admin', 'superAdmin', 'directBuild
   }
 });
 
-// User: Get own transactions
-router.get('/my', authenticate, async (req, res) => {
-  try {
-    const transactions = await Transaction.find({ user: req.user._id })
-      .populate('builder', 'companyName')
-      .populate('property', 'unitNumber');
-    res.json(transactions);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+
 
 // Get transaction by ID with access control
 router.get('/:id', authenticate, async (req, res) => {
