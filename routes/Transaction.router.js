@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 const Transaction = require('../models/Transaction.model');
 const Booking = require('../models/Booking.model');
@@ -135,6 +136,38 @@ router.post('/webhook', express.json({ type: '*/*' }), async (req, res) => {
   }
 
   res.status(200).json({ message: 'Webhook received' });
+});
+
+router.get('/:builderId', authenticate, authorizeRoles('admin', 'superAdmin', 'directBuilder'), async (req, res) => {
+  try {
+    const builderId = req.params.builderId;
+
+    // Step 1: Get all project IDs for the builder
+    const projects = await mongoose.model('Project').find({ builder: builderId }, '_id');
+    const projectIds = projects.map(p => p._id);
+
+    // Step 2: Get all building IDs in those projects
+    const buildings = await mongoose.model('Building').find({ project: { $in: projectIds } }, '_id');
+    const buildingIds = buildings.map(b => b._id);
+
+    // Step 3: Get all floor IDs in those buildings
+    const floors = await mongoose.model('Floor').find({ building: { $in: buildingIds } }, '_id');
+    const floorIds = floors.map(f => f._id);
+
+    // Step 4: Get all unit IDs in those floors
+    const units = await mongoose.model('Unit').find({ floor: { $in: floorIds } }, '_id');
+    const unitIds = units.map(u => u._id);
+
+    // Step 5: Get all transactions where property (unit) is among those
+    const transactions = await mongoose.model('Transaction').find({ property: { $in: unitIds } })
+      .populate('user', 'name email')
+      .populate('property', 'unitNumber')
+      .populate('builder', 'companyName');
+
+    res.json(transactions);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
 });
 
 
