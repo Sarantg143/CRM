@@ -117,12 +117,21 @@ router.post('/', authenticate, async (req, res) => {
 // Get events assigned to the user (their calendar)
 router.get('/', authenticate, async (req, res) => {
   try {
-    const events = await Event.find({ userId: req.user._id });
+    const userId = req.user._id;
+
+    const events = await Event.find({
+      $or: [
+        { userId: userId },
+        { createdBy: userId }
+      ]
+    }).sort({ startDate: 1 });
+
     res.json(events);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch events', error: err.message });
   }
 });
+
 
 // Get event by ID if user is assigned
 router.get('/:id', authenticate, async (req, res) => {
