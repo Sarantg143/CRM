@@ -43,6 +43,7 @@ const transactionRoutes = require("./routes/Transaction.router");
 const userRoutes = require("./routes/User.router");
 const dashboardRoutes = require("./routes/Dashboard.router");
 const newsletterRoutes = require("./routes/NewsLetter.router");
+const adsRoutes = require("./routes/Ads.router");
 
 // Middleware
 app.use(express.json());
@@ -68,6 +69,7 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/newsletter",newsletterRoutes);
+app.use("/api/ads",adsRoutes);
 
 
 
