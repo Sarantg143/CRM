@@ -122,4 +122,17 @@ router.get('/by-property/:unitId', authenticate, async (req, res) => {
   }
 });
 
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const broker = await Broker.findById(req.params.id);
+    if (!broker) {
+      return res.status(404).json({ message: 'Broker not found' });
+    }
+    await broker.deleteOne();
+    res.json({ message: 'Broker profile deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete broker', error: err.message });
+  }
+});
+
 module.exports = router;
