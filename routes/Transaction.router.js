@@ -226,7 +226,7 @@ router.get('/:builderId', authenticate, authorizeRoles('admin', 'superAdmin', 'd
     const unitIds = units.map(u => u._id);
 
     const transactions = await mongoose.model('Transaction').find({ property: { $in: unitIds } })
-      .populate('user', 'name email')
+      .populate('user', 'name email phone')
       .populate('property', 'unitNumber')
       .populate('builder', 'companyName');
 
