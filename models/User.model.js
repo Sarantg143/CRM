@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
   token:       { type: String },
   socialId:    {type: String,required: [false, 'Social media ID required'],unique: true,sparse: true  },
   googleId: { type: String },
+  
+  emailVerified: { type: Boolean, default: false },
+  otp: { type: String },
+  otpExpires: { type: Date },
+
   resetPasswordToken: {type:String},
   resetPasswordExpiry: {type:Date}},{ timestamps: true });
 
