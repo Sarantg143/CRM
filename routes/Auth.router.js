@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 // const passport = require('passport');
 const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const User = require('../models/User.model');
 const sendWelcomeEmail = require("../middleware/mailer"); 
 const sendOtpEmail = require('../middleware/mailerOTP'); 
