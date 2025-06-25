@@ -184,7 +184,7 @@ router.put('/project/:id', authenticate, authorizeRoles('directBuilder', 'admin'
   }
 });
 
-router.delete('/project/:id', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
+router.delete('/project/:id', authenticate, authorizeRoles('admin', 'superAdmin','directBuilder'), async (req, res) => {
   try {
     await Project.findByIdAndDelete(req.params.id);
     res.json({ message: 'Project deleted' });
@@ -248,7 +248,7 @@ router.put('/building/:id',  async (req, res) => {
   }
 });
 
-router.delete('/building/:id', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
+router.delete('/building/:id', authenticate, authorizeRoles('admin', 'superAdmin','directBuilder'), async (req, res) => {
   try {
     await Building.findByIdAndDelete(req.params.id);
     res.json({ message: 'Building deleted' });
@@ -309,7 +309,7 @@ router.put('/floor/:id', authenticate, authorizeRoles('directBuilder', 'admin', 
   }
 });
 
-router.delete('/floor/:id', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
+router.delete('/floor/:id', authenticate, authorizeRoles('admin', 'superAdmin','directBuilder'), async (req, res) => {
   try {
     await Floor.findByIdAndDelete(req.params.id);
     res.json({ message: 'Floor deleted' });
@@ -397,7 +397,7 @@ router.put('/unit/:id', authenticate, authorizeRoles('directBuilder', 'admin', '
   }
 });
 
-router.delete('/unit/:id', authenticate, authorizeRoles('admin', 'superAdmin'), async (req, res) => {
+router.delete('/unit/:id', authenticate, authorizeRoles('admin', 'superAdmin','directBuilder'), async (req, res) => {
   try {
     await Unit.findByIdAndDelete(req.params.id);
     res.json({ message: 'Unit deleted' });
