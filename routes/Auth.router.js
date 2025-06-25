@@ -9,6 +9,7 @@ const sendWelcomeEmail = require("../middleware/mailer");
 const sendOtpEmail = require('../middleware/mailerOTP'); 
 const { authenticate } = require('../middleware/auth');
 const router = express.Router();
+require('dotenv').config();
 
 const resetTokens = {}; 
 
@@ -247,7 +248,6 @@ router.post("/google", async (req, res) => {
   }
 });
 
-// Forgot password
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
@@ -267,23 +267,29 @@ router.post("/forgot-password", async (req, res) => {
       service: "Gmail",
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        pass: process.env.EMAIL_PASS.replace(/\s/g, '') 
       }
     });
 
     await transporter.sendMail({
       to: email,
-      subject: "Password Reset",
-      html: `<p>Click the link to reset your password: <a href="${resetLink}">${resetLink}</a></p>`,
+      subject: "Password Reset Request",
+      html: `
+        <p>Hello ${user.username || ''},</p>
+        <p>You requested a password reset. Click the link below to reset your password:</p>
+        <a href="${resetLink}">${resetLink}</a>
+        <p>This link will expire in 1 hour.</p>
+      `
     });
 
     res.json({ message: "Password reset email sent" });
   } catch (err) {
+    console.error("Forgot password error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// Reset Password
+// Reset Password Route
 router.post("/reset-password/:token", async (req, res) => {
   try {
     const { token } = req.params;
@@ -291,13 +297,13 @@ router.post("/reset-password/:token", async (req, res) => {
 
     if (!passwordRegex.test(newPassword)) {
       return res.status(400).json({
-        error: "Password must be 6–30 chars, include upper, lower, number, special char."
+        error: "Password must be 6–30 characters long, include uppercase, lowercase, number, and special character."
       });
     }
 
     const user = await User.findOne({
       resetToken: token,
-      resetTokenExpiry: { $gt: Date.now() }, // token not expired
+      resetTokenExpiry: { $gt: Date.now() }
     });
 
     if (!user) return res.status(400).json({ error: "Invalid or expired token" });
@@ -310,9 +316,11 @@ router.post("/reset-password/:token", async (req, res) => {
 
     res.json({ message: "Password reset successfully" });
   } catch (err) {
+    console.error("Reset password error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 
 // Logout
