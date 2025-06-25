@@ -55,6 +55,65 @@ const razorpay = new Razorpay({
 //   }
 // });
 
+// -------------------------------------------
+// router.post('/', authenticate, async (req, res) => {
+//   try {
+//     const { amount, propertyId } = req.body;
+
+//     if (!amount || amount <= 0 || !propertyId) {
+//       return res.status(400).json({ message: 'Valid amount and propertyId are required' });
+//     }
+
+//     const amountInPaise = amount * 100;
+//     const userId = req.user._id.toString();
+//     const Unit = mongoose.model('Unit');
+//     const Floor = mongoose.model('Floor');
+//     const Building = mongoose.model('Building');
+//     const Project = mongoose.model('Project');
+
+//     const unit = await Unit.findById(propertyId).lean();
+//     if (!unit) return res.status(404).json({ message: 'Unit not found' });
+
+//     const floor = await Floor.findById(unit.floor).lean();
+//     if (!floor) return res.status(404).json({ message: 'Floor not found' });
+
+//     const building = await Building.findById(floor.building).lean();
+//     if (!building) return res.status(404).json({ message: 'Building not found' });
+
+//     const project = await Project.findById(building.project).lean();
+//     if (!project) return res.status(404).json({ message: 'Project not found' });
+
+//     const builderId = project.builder?.toString();
+//     if (!builderId) return res.status(404).json({ message: 'Builder not found from project' });
+
+//     const order = await razorpay.orders.create({
+//       amount: amountInPaise,
+//       currency: 'INR',
+//       receipt: `receipt_${Date.now()}`,
+//       payment_capture: 1,
+//       notes: {
+//         userId,
+//         builderId,
+//         propertyId,
+//       },
+//     });
+
+//     await Transaction.create({
+//       user: userId,
+//       builder: builderId,
+//       property: propertyId,
+//       amount,
+//       status: 'created',
+//       razorpayOrderId: order.id,
+//     });
+
+//     res.status(201).json({ message: 'Order created', order });
+//   } catch (err) {
+//     console.error('Create order error:', err);
+//     res.status(500).json({ message: 'Could not create order', error: err.message });
+//   }
+// });
+
 router.post('/', authenticate, async (req, res) => {
   try {
     const { amount, propertyId } = req.body;
@@ -65,10 +124,23 @@ router.post('/', authenticate, async (req, res) => {
 
     const amountInPaise = amount * 100;
     const userId = req.user._id.toString();
+
     const Unit = mongoose.model('Unit');
     const Floor = mongoose.model('Floor');
     const Building = mongoose.model('Building');
     const Project = mongoose.model('Project');
+    const Transaction = mongoose.model('Transaction');
+
+    const existingTransaction = await Transaction.findOne({
+      property: propertyId,
+    });
+
+    if (existingTransaction) {
+      return res.status(409).json({
+        message: 'This property already has a transaction and cannot be booked again.',
+        transaction: existingTransaction,
+      });
+    }
 
     const unit = await Unit.findById(propertyId).lean();
     if (!unit) return res.status(404).json({ message: 'Unit not found' });
