@@ -60,7 +60,7 @@ router.post('/signup', async (req, res) => {
 
     await newUser.save();
     await sendOtpEmail(email, username, otp);
-    await sendWelcomeEmail(email, username);
+    // await sendWelcomeEmail(email, username);
 
     res.status(200).json({
       message: 'Signup successful. OTP sent to email.',
