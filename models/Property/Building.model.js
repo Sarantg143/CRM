@@ -8,6 +8,7 @@ const buildingSchema = new mongoose.Schema({
   photos: [String],
   videos: [String],
   description: String,
+  mapViewUrl: {type: String},
 
   buildingArea: { type: String },                
   priceRange: { type: String },                  
