@@ -26,14 +26,14 @@ router.post('/', authenticate, authorizeRoles('user'), async (req, res) => {
     const existingBooking = await Booking.findOne({ unit: unitId, savedForLater: false });
 
     if (existingBooking) {
-      return res.status(200).json({
+      return res.status(409).json({
         message: 'Unit already sold',
         existing: true,
         booking: existingBooking
       });
     }
     const builderId = unit.floor.building.project.builder._id;
-
+    
     const booking = new Booking({
       user: req.user._id,
       unit: unitId,
