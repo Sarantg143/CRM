@@ -26,6 +26,7 @@ mongoose.connect(process.env.MONGO_URI)
 const appointmentRoutes = require("./routes/Appointment.router");
 const authRoutes = require("./routes/Auth.router");
 const bookingRoutes = require("./routes/Booking.router");
+const bookingformRoutes = require("./routes/BookingForm.router");
 const brokerRoutes = require("./routes/Broker.router");
 const calenderRoutes = require("./routes/Calender.router");
 const complaintRoutes = require("./routes/Complaint.router");
@@ -52,6 +53,7 @@ app.use(express.json());
 app.use("/api/appointments",appointmentRoutes);
 app.use("/api/auth",authRoutes);
 app.use("/api/booking",bookingRoutes);
+app.use("/api/bookingform",bookingformRoutes);
 app.use("/api/broker", brokerRoutes);
 app.use("/api/calender",calenderRoutes);
 app.use("/api/complaints",complaintRoutes);
