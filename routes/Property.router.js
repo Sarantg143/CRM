@@ -231,7 +231,8 @@ router.get('/buildings', async (req, res) => {
 
 router.get('/buildings/by-project/:projectId', async (req, res) => {
   try {
-    const buildings = await Building.find({ project: req.params.projectId });
+    const buildings = await Building.find({ project: req.params.projectId })
+    .populate('project', 'projectName location propertyType');
     res.json(buildings);
   } catch (err) {
     res.status(400).json({ error: err.message });
